@@ -1,0 +1,212 @@
+describe('GET - httpbin return 200 without any response', () => {
+    it('response should be 200', () => {
+        cy.request('https://httpbin.org/').its('status').should('eq',200);
+    });
+});
+
+describe('GET - httpbin return 200 with response', () => {
+    it('resposne should be 200', () => {
+        cy.request('https://httpbin.org/').then(response => {
+            const currentStatus = response.status;
+            const expectedStatus = 200;
+
+            assert.equal(expectedStatus, currentStatus);
+        });
+    }); 
+});
+
+describe('GET - Checking request duration within 300ms limit', () => {
+    const request = {
+        method: 'GET',
+        url: 'https://httpbin.org/',
+        failOnStatusCode: false
+    }
+
+    it('duration test', () => {
+        cy.request(request).then(response => {
+            cy.log(response.duration)
+
+            assert.isTrue(response.duration <= 300)
+        });
+    });
+});
+
+describe('POST - Checking request duration within 300ms limit', () => {
+    const request = {
+        method: 'POST',
+        url: 'https://httpbin.org/post',
+        failOnStatusCode: false
+    }
+
+    it('duration test', () => {
+        cy.request(request).then(response => {
+            cy.log(response.duration)
+
+            assert.isTrue(response.duration <= 300)
+        });
+    });
+});
+
+describe('GET - httpbin response with incorrect url', () => {
+    const request = {
+        url: 'https://httpbin.org/get',
+        failOnStatusCode: false
+    }
+
+    it('resposne should be 200', () => {
+        cy.request(request).then(response => {
+            const currentStatus = response.status;
+            const expectedStatus = 200;
+
+            assert.equal(expectedStatus, currentStatus);
+        });
+    });
+});
+
+describe('POST - httpbin response with incorrect url', () => {
+    const request = {
+        method: 'POST',
+        url: 'https://httpbin.org/post',
+        failOnStatusCode: false
+    }
+
+    it('resposne should be 200', () => {
+        cy.request(request).then(response => {
+            const currentStatus = response.status;
+            const expectedStatus = 200;
+
+            assert.equal(expectedStatus, currentStatus);
+        });
+    });
+});
+
+describe('GET - httpbin response and data', () => {
+    const request = {
+        url: 'https://httpbin.org/',
+        query: {
+            "key": "value"
+        },
+        failOnStatusCode: false
+    }
+
+    it('response and data should be correct', () => {
+        cy.request(request).then(response => {
+            const currentStatus = response.status;
+            const expectedStatus = 200;
+
+            const currentArgValue = response.body.args.key
+            const expectedArgValue = 'value' 
+
+            assert.equal(expectedStatus, currentStatus);
+            assert.equal(expectedArgValue, currentArgValue);
+
+            cy.log(response.body.args)
+        });
+    });
+});
+
+describe('POST - httpbin with Body', () => {
+    const bodyRequest = {
+        userName: "Test"
+    }
+
+    const request = {
+        method: 'POST',
+        url: 'https://httpbin.org/post',
+        body: bodyRequest,
+        failOnStatusCode: false
+    }
+
+    it('resposne should be 200', () => {
+        cy.request(request).then(response => {
+            const currentStatus = response.status;
+            const expectedStatus = 200;
+
+            const responseData = response.body.json
+
+            assert.equal(bodyRequest.userName, responseData.userName)
+            assert.notStrictEqual(bodyRequest, response.body.data)
+            assert.equal(expectedStatus, currentStatus);
+        });
+    });
+});
+
+describe('GET - API headers', () => {
+    const request = {
+        method: 'GET',
+        url: 'https://httpbin.org/',
+        headers: {
+            "customHeader": "customValue"
+        },
+        failOnStatusCode: false
+    }
+
+    it('response and headers should be correct', () => {
+        cy.request(request).then(response => {
+            const currentStatus = response.status;
+            const expectedStatus = 200;
+
+            const currentHeaderValue = response.requestHeaders.customHeader
+
+            assert.equal('customValue', currentHeaderValue);
+            assert.equal(expectedStatus, currentStatus);
+
+            cy.log(response.requestHeaders);
+            cy.log(JSON.stringify(response.requestHeaders));
+        });
+    });
+});
+
+describe('GET - API User Agent', () => {
+    const request = {
+        method: 'GET',
+        url: 'https://httpbin.org/',
+        headers: {
+            "User-Agent": "My-test-user-agent"
+        },
+        failOnStatusCode: false
+    }
+
+    it('response and user agent should be correct', () => {
+        cy.request(request).then(response => {
+            const currentStatus = response.status;
+            const expectedStatus = 200;
+
+            const currentUserAgentValue = response.requestHeaders['User-Agent']
+
+            assert.equal('My-test-user-agent', currentUserAgentValue);
+            assert.equal(expectedStatus, currentStatus);
+
+            cy.log(JSON.stringify(response.requestHeaders));
+        });
+    });
+});
+
+describe('GET - Test API Random Data', () => {
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * max)
+    }
+
+    const requestDuration = {
+        method: 'GET',
+        url: 'https://httpbin.org/',
+        failOnStatusCode: false
+    }
+
+    it('random data ', () => {
+        for (let index = 0; index < 5; index++) {
+            const randomId = getRandomInt(1000)
+
+            const requestRandom = {
+                method: 'GET',
+                url: 'https://httpbin.org/get',
+                failOnStatusCode: false
+            }
+
+            cy.request(requestRandom).then(response => {
+                assert.equal(200, response.status);
+                cy.log(response.body)
+            });
+        }
+    });
+});
